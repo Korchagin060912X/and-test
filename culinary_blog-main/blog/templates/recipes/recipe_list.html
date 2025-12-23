@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Все рецепты - Кулинарный блог{% endblock %}
+
+{% block content %}
+<div class="recipes-header">
+    <h2>Все рецепты</h2>
+    <p class="subtitle">Откройте для себя вкусные рецепты на любой случай</p>
+</div>
+
+<!-- Фильтр по категориям -->
+<div class="categories-filter">
+    <a href="{% url 'recipes:recipe_list' %}" 
+       class="category-btn {% if not selected_category %}active{% endif %}">
+        Все категории
+    </a>
+    {% for cat in categories %}
+    <a href="{% url 'recipes:recipe_list' %}?category={{ cat.slug }}" 
+       class="category-btn {% if selected_category == cat %}active{% endif %}">
+        {{ cat.name }}
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Сетка рецептов -->
+<div class="recipes-grid">
+    {% for recipe in page_obj %}
+    <article class="recipe-card">
+        {% if recipe.image %}
+        <div class="recipe-image">
+            <a href="{{ recipe.get_absolute_url }}">
+                <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+            </a>
+        </div>
+        {% else %}
+        <div class="recipe-image placeholder">
+            <a href="{{ recipe.get_absolute_url }}">
+                <span>🍽️</span>
+            </a>
+        </div>
+        {% endif %}
+        <div class="recipe-content">
+            {% if recipe.category %}
+            <span class="recipe-category">{{ recipe.category.name }}</span>
+            {% endif %}
+            <h3 class="recipe-title">
+                <a href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
+            </h3>
+            <p class="recipe-description">{{ recipe.description|truncatewords:20 }}</p>
+            <div class="recipe-meta">
+                <span class="meta-item">⏱️ {{ recipe.cooking_time }} мин</span>
+                <span class="meta-item">🍽️ {{ recipe.servings }} порц.</span>
+            </div>
+            <a href="{{ recipe.get_absolute_url }}" class="recipe-link">Читать рецепт →</a>
+        </div>
+    </article>
+    {% empty %}
+    <div class="empty-state">
+        <p>Рецептов пока нет. Зайдите позже!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Пагинация -->
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}" class="page-link">← Предыдущая</a>
+    {% endif %}
+    
+    <span class="page-info">
+        Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+    </span>
+    
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}" class="page-link">Следующая →</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
